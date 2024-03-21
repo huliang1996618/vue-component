@@ -12,69 +12,57 @@
   </div>
 </template>
 
-<script lang="ts">
-export default {
-  name:'VirtualList',
-  props: {
-    //所有列表数据
-    listData:{
-      type:Array,
-      default:()=>[]
-    },
-    //每项高度
-    itemSize: {
-      type: Number,
-      default:200
-    }
-  },
-  computed:{
-    //列表总高度
-    listHeight(){
-      return this.listData.length * this.itemSize;
-    },
-    //可显示的列表项数
-    visibleCount(){
-      return Math.ceil(this.screenHeight / this.itemSize)
-    },
-    //偏移量对应的style
-    getTransform(){
-      return `translate3d(0,${this.startOffset}px,0)`;
-    },
-    //获取真实显示列表数据
-    visibleData(){
-      return this.listData.slice(this.start, Math.min(this.end,this.listData.length));
-    }
-  },
-  mounted() {
-    this.screenHeight = this.$el.clientHeight;
-    this.start = 0;
-    this.end = this.start + this.visibleCount;
-  },
-  data() {
-    return {
-      //可视区域高度
-      screenHeight:0,
-      //偏移量
-      startOffset:0,
-      //起始索引
-      start:0,
-      //结束索引
-      end:null,
-    };
-  },
-  methods: {
-    scrollEvent() {
-      //当前滚动位置
-      let scrollTop = this.$refs.list.scrollTop;
-      //此时的开始索引
-      this.start = Math.floor(scrollTop / this.itemSize);
-      //此时的结束索引
-      this.end = this.start + this.visibleCount;
-      //此时的偏移量
-      this.startOffset = scrollTop - (scrollTop % this.itemSize);
-    }
-  }
-};
+<script lang="ts" setup>
+import { computed, onMounted, ref } from 'vue';
+
+interface Props {
+  listData: any[],
+  itemSize: number,
+}
+const props = defineProps<Props>()
+
+const list = ref<HTMLElement>();
+
+// 容器高度
+const screenHeight = ref(0);
+
+// 起始位置
+const start = ref(0);
+
+const end = ref(0);
+
+// 列表总高度
+const listHeight = computed(() => props.itemSize * props.listData.length);
+
+// 可现实的列表项数
+const visibleCount = computed(() => Math.ceil(screenHeight.value / props.itemSize));
+
+// 实际渲染数据
+const visibleData = computed(() => props.listData.slice(start.value, Math.min(end.value, props.listData.length)))
+
+// 偏移量
+const startOffset = ref(0)
+
+const getTransform = computed(() => `translate3d(0,${startOffset.value}px,0)`)
+
+onMounted(() => {
+  screenHeight.value = list.value?.clientHeight || 0
+  end.value = start.value + visibleCount.value
+})
+
+
+const scrollEvent = () => {
+  // 当前滚动位置
+  let scrollTop = list.value?.scrollTop;
+
+  start.value = Math.floor(Number(scrollTop) / props.itemSize);
+
+  end.value = start.value + visibleCount.value;
+
+  // 偏移量
+  startOffset.value = Number(scrollTop) - (Number(scrollTop) % props.itemSize)
+}
+
 </script>
 
 
