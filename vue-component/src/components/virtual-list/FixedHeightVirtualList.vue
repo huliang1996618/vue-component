@@ -1,3 +1,5 @@
+
+<!-- 固定高度的虚拟列表 -->
 <template>
   <div ref="list" class="infinite-list-container" @scroll="scrollEvent($event)">
     <div class="infinite-list-phantom" :style="{ height: listHeight + 'px' }"></div>
